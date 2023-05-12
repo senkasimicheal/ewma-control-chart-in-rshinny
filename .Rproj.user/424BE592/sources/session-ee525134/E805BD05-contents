@@ -1,0 +1,45 @@
+df = read.csv('data.csv')
+
+ewma = function(lambda,target_value_mean,factor_L,Sigma){
+  z = c();
+  
+  upper_control_limits = c();
+  lower_control_limits = c();
+  ucl = 0;
+  lcl = 0;
+  
+  z_calculation = lambda*df$x[1] + (1-lambda)*target_value_mean;
+  z = append(z,z_calculation)
+  
+  for(i in 1:length(df[[1]])){
+    ucl=target_value_mean + factor_L*Sigma*(sqrt((lambda/(2-lambda))*(1-((1-lambda)^(2*i)))))
+    lcl=target_value_mean - factor_L*Sigma*(sqrt((lambda/(2-lambda))*(1-((1-lambda)^(2*i)))))
+    upper_control_limits = append(upper_control_limits,ucl)
+    lower_control_limits = append(lower_control_limits,lcl)
+  }
+  
+  for(i in 2:length(df[[1]])){
+    z_calculation = lambda*df$x[i] + (1-lambda)*z[i-1]
+    z = append(z,z_calculation) 
+  }
+  
+  plot(1:length(df[[1]]),z, type = "b",
+       main="EWMA Control Chart", xlab = "Observation",
+       ylab = "EWMA", ylim = c(min(lower_control_limits),max(upper_control_limits)));
+  abline(h=target_value_mean)
+  lines(1:length(df[[1]]),upper_control_limits)
+  lines(1:length(df[[1]]),lower_control_limits)
+}
+
+
+lambda <- readline("Enter lambda: ")
+lambda <- as.numeric(lambda)
+target_value_mean <- readline("Enter target value of the mean: ")
+target_value_mean <- as.numeric(target_value_mean)
+factor_L <- readline("Enter width of the control limits: ")
+factor_L <- as.numeric(factor_L)
+Sigma <- readline("Enter the value of sigma: ")
+Sigma <- as.numeric(Sigma)
+
+ewma(lambda,target_value_mean,factor_L,Sigma)
+ewma(0.1,10,2.7,1)
